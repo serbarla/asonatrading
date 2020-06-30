@@ -1,11 +1,9 @@
 import classnames from 'classnames';
 import { History } from 'history';
 import * as React from 'react';
-import { Dropdown } from 'react-bootstrap';
 import { FormattedMessage } from 'react-intl';
 import { connect, MapDispatchToPropsFunction } from 'react-redux';
 import { Link, RouteProps, withRouter } from 'react-router-dom';
-import { languages } from '../../api/config';
 import { LogoutIcon } from '../../assets/images/sidebar/LogoutIcon';
 import { ProfileIcon } from '../../assets/images/sidebar/ProfileIcon';
 import { SidebarIcons } from '../../assets/images/sidebar/SidebarIcons';
@@ -59,15 +57,9 @@ class SidebarContainer extends React.Component<Props, State> {
     };
 
     public render() {
-        const { isLoggedIn, isActive, lang } = this.props;
-        const { isOpenLanguage } = this.state;
+        const { isLoggedIn, isActive } = this.props;
 
         const address = this.props.history.location ? this.props.history.location.pathname : '';
-        const languageName = lang.toUpperCase();
-
-        const languageClassName = classnames('dropdown-menu-language-field', {
-            'dropdown-menu-language-field-active': isOpenLanguage,
-        });
 
         const sidebarClassName = classnames('pg-sidebar-wrapper', {
             'pg-sidebar-wrapper--active': isActive,
@@ -79,22 +71,6 @@ class SidebarContainer extends React.Component<Props, State> {
                 {this.renderProfileLink()}
                 <div className="pg-sidebar-wrapper-nav">
                     {pgRoutes(isLoggedIn).map(this.renderNavItems(address))}
-                </div>
-                <div className="pg-sidebar-wrapper-lng">
-                    <div className="btn-group pg-navbar__header-settings__account-dropdown dropdown-menu-language-container">
-                        <Dropdown>
-                            <Dropdown.Toggle variant="primary" id={languageClassName}>
-                                <img
-                                    src={this.tryRequire(lang) && require(`../../assets/images/sidebar/${lang}.svg`)}
-                                    alt={`${lang}-flag-icon`}
-                                />
-                                <span className="dropdown-menu-language-selected">{languageName}</span>
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                {this.getLanguageDropdownItems()}
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
                 </div>
                 {this.renderLogout()}
             </div>
@@ -172,52 +148,6 @@ class SidebarContainer extends React.Component<Props, State> {
         );
     };
 
-    public getLanguageDropdownItems = () => {
-        return languages.map((l: string) =>
-            <Dropdown.Item onClick={e => this.handleChangeLanguage(l)}>
-                <div className="dropdown-row">
-                    <img
-                        src={this.tryRequire(l) && require(`../../assets/images/sidebar/${l}.svg`)}
-                        alt={`${l}-flag-icon`}
-                    />
-                    <span>{l.toUpperCase()}</span>
-                </div>
-            </Dropdown.Item>,
-        );
-    };
-
-    private tryRequire = (name: string) => {
-        try {
-            require(`../../assets/images/sidebar/${name}.svg`);
-
-            return true;
-        } catch (err) {
-            return false;
-        }
-    };
-
-
-    private handleChangeLanguage = (language: string) => {
-        const { user, isLoggedIn } = this.props;
-
-        if (isLoggedIn) {
-            const data = user.data && JSON.parse(user.data);
-
-            if (data && data.language && data.language !== language) {
-                const payload = {
-                    ...user,
-                    data: JSON.stringify({
-                        ...data,
-                        language,
-                    }),
-                };
-
-                this.props.changeUserDataFetch({ user: payload });
-            }
-        }
-
-        this.props.changeLanguage(language);
-    };
 }
 
 const mapStateToProps = (state: RootState): ReduxProps => ({
